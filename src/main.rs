@@ -1,4 +1,6 @@
 use clap::Parser;
+mod config;
+use config::read_config;
 
 
 fn main() {
@@ -8,16 +10,27 @@ fn main() {
         Ok(file_type) => {
             println!("File type: {:?}", file_type);
             println!("Args: {:?}", &args);
+            let config=read_config(&args.config);
+             match config{
+                Ok(config)=>{
+                    println!("Config: {:?}", config);
+                },
+                Err(error) =>{
+                    println!("Error: {}", error);
+                    std::process::exit(1);
+                }
+            }
         },
         Err(error) =>{
             println!("Error: {}", error);
             std::process::exit(1);
         }
     }
-
-
+   
 
 }
+
+
 
 
 #[derive(Parser, Debug)]

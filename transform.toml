@@ -1,0 +1,5 @@
+[columns]
+keep = ["name", "email", "age"]
+
+[filters]
+status = "active"
