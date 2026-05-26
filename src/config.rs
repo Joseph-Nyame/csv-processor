@@ -11,8 +11,8 @@ pub fn read_config(file_path: &str)->Result<Config,String>
 
 #[derive(Deserialize, Debug)]
 pub struct Config{
-    columns: Columns,
-    filters: HashMap<String, String>,
+   pub columns: Columns,
+   pub filters: HashMap<String, String>,
 }
 
 

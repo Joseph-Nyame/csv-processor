@@ -1,6 +1,8 @@
 use clap::Parser;
 mod config;
+mod converter;
 use config::read_config;
+use converter::ReadOptions;
 
 
 fn main() {
@@ -14,6 +16,29 @@ fn main() {
              match config{
                 Ok(config)=>{
                     println!("Config: {:?}", config);
+                    match file_type{
+                        FileType::XLSX=>{
+                            let options = ReadOptions{
+                                file_path: args.file_name,
+                                keep: config.columns.keep,
+                                filters: config.filters,
+                            };
+                            let data = converter::read_xlsx(options);
+                            match data{
+                                Ok(data)=>{
+                                    println!("Data: {:?}", data);
+                                }
+                                Err(error)=>{
+                                    println!("Error: {}", error);
+                                    std::process::exit(1);
+                                }
+                            }
+                        }
+                        _=>{
+                            println!("Converter not implemented yet");
+                            std::process::exit(1);
+                        }
+                    }  
                 },
                 Err(error) =>{
                     println!("Error: {}", error);
