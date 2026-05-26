@@ -2,4 +2,4 @@
 keep = ["name", "email", "age"]
 
 [filters]
-status = "inactive"
+status = "active"

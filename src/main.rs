@@ -1,9 +1,10 @@
 use clap::Parser;
 mod config;
 mod converter;
+mod writer;
 use config::read_config;
 use converter::ReadOptions;
-
+use writer::write_csv;
 
 fn main() {
     let args = Args::parse();
@@ -27,6 +28,16 @@ fn main() {
                             match data{
                                 Ok(data)=>{
                                     println!("Data: {:?}", data);
+                                    let write_data = write_csv(&data, &args.output);
+                                    match write_data{
+                                        Ok(_) => {
+                                            println!("Data written successfully");
+                                        }
+                                        Err(error) => {
+                                            println!("Error: {}", error);
+                                            std::process::exit(1);
+                                        }
+                                    }
                                 }
                                 Err(error)=>{
                                     println!("Error: {}", error);
