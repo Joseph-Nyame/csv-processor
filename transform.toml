@@ -3,3 +3,6 @@ keep = ["name", "email", "age"]
 
 [filters]
 status = "active"
+
+[source]
+sheet = "Sales Data"
