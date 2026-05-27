@@ -5,7 +5,8 @@ use std::collections::HashMap;
 pub fn read_xlsx(options:ReadOptions)->Result<Vec<Vec<String>>,String>
 {
     let mut open_workbook = open_workbook_auto(&options.file_path).map_err(|e| e.to_string())?;
-    let work_sheet = open_workbook.worksheet_range("Sheet1").map_err(|e| e.to_string())?;
+    let sheet_name = open_workbook.sheet_names().first().ok_or("No sheets found".to_string())?.clone();
+    let work_sheet = open_workbook.worksheet_range(&sheet_name).map_err(|e| e.to_string())?;
     let mut data:Vec<Vec<String>> = Vec::new();
     let mut rows=work_sheet.rows();
     let header_row= rows.next().ok_or("No header row found".to_string())?; //get first row as header
