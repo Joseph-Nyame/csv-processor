@@ -9,43 +9,21 @@ use config::read_config;
 use converter::ReadOptions;
 use file_type::detect_file_type;
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>>
+{
     let args = Args::parse();
-    let file_type = detect_file_type(&args.file_name);
-    match file_type {
-        Ok(file_type) => {
-            println!("File type: {:?}", file_type);
-            println!("Args: {:?}", &args);
-            let config=read_config(&args.config);
-             match config{
-                Ok(config)=>{
-                    println!("Config: {:?}", config);
-                    let options = ReadOptions{
-                        file_path: args.file_name,
-                        keep: config.columns.keep,
-                        filters: config.filters,
-                    };
-                    let result = processor::perform_conversion(file_type, options, &args.output);
-                    match result{
-                        Ok(_) => {
-                        }
-                        Err(error) => {
-                            println!("Error: {}", error);
-                            std::process::exit(1);
-                        }
-                    }
-                },
-                Err(error) =>{
-                    println!("Error: {}", error);
-                    std::process::exit(1);
-                }
-            }
-        },
-        Err(error) =>{
-            println!("Error: {}", error);
-            std::process::exit(1);
-        }
-    }
+    let file_type = detect_file_type(&args.file_name)?;
+    println!("File type: {:?}", file_type);
+    println!("Args: {:?}", &args);
+    let config=read_config(&args.config)?;
+    println!("Config: {:?}", config);
+    let options = ReadOptions{
+        file_path: args.file_name,
+        keep: config.columns.keep,
+        filters: config.filters,
+    };
+    processor::perform_conversion(file_type, options, &args.output)?;
+    Ok(())
    
 
 }
