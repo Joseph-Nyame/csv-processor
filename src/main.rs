@@ -3,9 +3,11 @@ mod config;
 mod converter;
 mod writer;
 mod json_converter;
+mod file_type;
+mod processor;
 use config::read_config;
 use converter::ReadOptions;
-use writer::write_csv;
+use file_type::detect_file_type;
 
 fn main() {
     let args = Args::parse();
@@ -18,66 +20,20 @@ fn main() {
              match config{
                 Ok(config)=>{
                     println!("Config: {:?}", config);
-                    match file_type{
-                        FileType::XLSX=>{
-                            let options = ReadOptions{
-                                file_path: args.file_name,
-                                keep: config.columns.keep,
-                                filters: config.filters,
-                            };
-                            let data = converter::read_xlsx(options);
-                            match data{
-                                Ok(data)=>{
-                                    println!("Data: {:?}", data);
-                                    let write_data = write_csv(&data, &args.output);
-                                    match write_data{
-                                        Ok(_) => {
-                                            println!("Data written successfully");
-                                        }
-                                        Err(error) => {
-                                            println!("Error: {}", error);
-                                            std::process::exit(1);
-                                        }
-                                    }
-                                }
-                                Err(error)=>{
-                                    println!("Error: {}", error);
-                                    std::process::exit(1);
-                                }
-                            }
+                    let options = ReadOptions{
+                        file_path: args.file_name,
+                        keep: config.columns.keep,
+                        filters: config.filters,
+                    };
+                    let result = processor::perform_conversion(file_type, options, &args.output);
+                    match result{
+                        Ok(_) => {
                         }
-                        FileType::JSON=>{
-                            let options =ReadOptions{
-                                file_path:args.file_name,
-                                keep:config.columns.keep,
-                                filters:config.filters,
-                            };
-                            let data = json_converter::read_json(options);
-                            match data{
-                                Ok(data)=>{
-                                    println!("Data{:?}",data);
-                                    let write_data =write_csv(&data,&args.output);
-                                    match write_data{
-                                        Ok(_) => {
-                                            println!("Data written successfully");
-                                        }
-                                        Err(error) => {
-                                            println!("Error: {}", error);
-                                            std::process::exit(1);
-                                        }
-                                    }
-                                }
-                                Err(error)=>{
-                                    println!("Error: {}", error);
-                                    std::process::exit(1);
-                                }
-                            }
-                        }
-                        _=>{
-                            println!("Converter not implemented yet");
+                        Err(error) => {
+                            println!("Error: {}", error);
                             std::process::exit(1);
                         }
-                    }  
+                    }
                 },
                 Err(error) =>{
                     println!("Error: {}", error);
@@ -116,26 +72,3 @@ struct Args {
 
 }
 
-
-
-#[derive(Debug)]
-enum FileType{
-    XLSX,
-    PDF,
-    JSON,
-    XML,
-    SQL,
-}
-
-fn detect_file_type(file_name: &str) -> Result<FileType, String> {
-  let file_extension = file_name.split('.').last().unwrap();
-  match file_extension {
-    "xlsx" => Ok(FileType::XLSX),
-    "pdf" => Ok(FileType::PDF),
-    "json" => Ok(FileType::JSON),
-    "xml" => Ok(FileType::XML),
-    "sql" => Ok(FileType::SQL),
-    _ => Err(format!("Unsupported file type: {}", file_extension)),
-    
-}
-}
