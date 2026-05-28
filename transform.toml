@@ -1,8 +1,6 @@
 [columns]
-keep = ["name", "email", "age"]
+keep = ["name", "email", "age", "phone"]
 
 [filters]
 status = "active"
 
-[source]
-sheet = "Sales Data"

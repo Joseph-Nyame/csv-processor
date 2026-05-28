@@ -1,12 +1,31 @@
 use crate::converter::ReadOptions;
 use serde_json;
+use crate::writer::ErrorRecord;
 
-pub fn read_json(options:ReadOptions)->Result<Vec<Vec<String>>,String>
+pub fn read_json(options:ReadOptions)->Result<(Vec<Vec<String>>, Vec<ErrorRecord>), String>
 {
     let file_content = std::fs::read_to_string(&options.file_path).map_err(|e| e.to_string())?;
     let data:serde_json::Value = serde_json::from_str(&file_content).map_err(|e| e.to_string())?;
     let mut result:Vec<Vec<String>> = Vec::new();
-    for row in data.as_array().ok_or("Invalid JSON format".to_string())?{
+    let mut errors:Vec<ErrorRecord> = Vec::new();
+    if let Some(first_row) = data.as_array()
+    .and_then(|arr| arr.first()) {
+        for col in &options.keep {
+            if first_row.get(col.as_str()).is_none() {
+                errors.push(ErrorRecord {
+                    row_number: 0,
+                    reason: format!("Column '{}' not found in file", col),
+                    row_data: vec![col.clone()],
+                });
+            }
+        }
+    }
+    if !errors.is_empty() {
+        return Err(format!("Missing columns: {}", 
+            errors.iter().map(|e| e.reason.clone()).collect::<Vec<_>>().join(", ")));
+    }
+    
+    for row in data.as_array().ok_or("Invalid JSON format".to_string())?.iter(){
         let mut new_row:Vec<String> = Vec::new();
         let mut passes = true;
         for (col,val) in &options.filters{
@@ -29,6 +48,6 @@ pub fn read_json(options:ReadOptions)->Result<Vec<Vec<String>>,String>
             result.push(new_row);
         }
     }
-    Ok(result)
+    Ok((result,errors))
     
 }

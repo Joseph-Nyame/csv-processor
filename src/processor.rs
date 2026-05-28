@@ -2,6 +2,7 @@ use crate::file_type::FileType;
 use crate::converter::{self ,ReadOptions};
 use crate::writer::write_csv;
 use crate::json_converter;
+use crate::writer::write_error_report;
 
 
 
@@ -9,44 +10,24 @@ pub fn perform_conversion(file_type:FileType, options:ReadOptions, output: &str)
 {
     match file_type{
         FileType::XLSX=>{
-            let read_options = ReadOptions{
-                file_path: options.file_path,
-                keep: options.keep,
-                filters: options.filters,
-            };
-            let data = converter::read_xlsx(read_options);
-            match data{
-                Ok(data)=>{
-                    println!("Data: {:?}", data);
-                    write_csv(&data, output)?;
-                    println!("Data written successfully");
-                    Ok(())
-                }
-                Err(error)=>{
-                    println!("Error: {}", error);
-                    std::process::exit(1);
-                }
+            let (data,errors) = converter::read_xlsx(options)?;
+            write_csv(&data,output)?;
+            println!("Data written successfully");
+            if !errors.is_empty(){
+              let error_path = format!("{}_errors.csv", output.trim_end_matches(".csv"));
+              write_error_report(&errors, &error_path)?;
             }
+            Ok(())
         }
         FileType::JSON=>{
-            let read_options = ReadOptions{
-                file_path: options.file_path,
-                keep: options.keep,
-                filters: options.filters,
-            };
-            let data = json_converter::read_json(read_options);
-            match data{
-                Ok(data)=>{
-                    println!("Data{:?}",data);
-                    write_csv(&data,output)?;
-                    println!("Data written successfully");
-                    Ok(())
-                }
-                Err(error)=>{
-                    println!("Error: {}", error);
-                    std::process::exit(1);
-                }
+            let (data,errors) = json_converter::read_json(options)?;
+            write_csv(&data,output)?;
+            println!("Data written successfully");
+            if !errors.is_empty(){
+                let error_path = format!("{}_errors.csv", output.trim_end_matches(".csv"));
+                write_error_report(&errors, &error_path)?;
             }
+            Ok(())
         }
         _=>{
             println!("Converter not implemented yet");
