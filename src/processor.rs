@@ -3,6 +3,7 @@ use crate::converter::{self ,ReadOptions};
 use crate::writer::write_csv;
 use crate::json_converter;
 use crate::writer::write_error_report;
+use crate::csv_converter;
 
 
 
@@ -23,6 +24,16 @@ pub fn perform_conversion(file_type:FileType, options:ReadOptions, output: &str)
             let (data,errors) = json_converter::read_json(options)?;
             write_csv(&data,output)?;
             println!("Data written successfully");
+            if !errors.is_empty(){
+                let error_path = format!("{}_errors.csv", output.trim_end_matches(".csv"));
+                write_error_report(&errors, &error_path)?;
+            }
+            Ok(())
+        }
+        FileType::CSV=>{
+            let (data,errors)= csv_converter::read_csv(options)?;
+            write_csv(&data, output)?;
+            println!("data written successfully");
             if !errors.is_empty(){
                 let error_path = format!("{}_errors.csv", output.trim_end_matches(".csv"));
                 write_error_report(&errors, &error_path)?;

@@ -5,6 +5,7 @@ mod writer;
 mod json_converter;
 mod file_type;
 mod processor;
+mod csv_converter;
 use config::read_config;
 use converter::ReadOptions;
 use file_type::detect_file_type;

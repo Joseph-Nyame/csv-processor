@@ -7,6 +7,7 @@ pub enum FileType{
     JSON,
     XML,
     SQL,
+    CSV,
 }
 
 pub fn detect_file_type(file_name: &str) -> Result<FileType, String> {
@@ -17,6 +18,7 @@ pub fn detect_file_type(file_name: &str) -> Result<FileType, String> {
     "json" => Ok(FileType::JSON),
     "xml" => Ok(FileType::XML),
     "sql" => Ok(FileType::SQL),
+    "csv" => Ok(FileType::CSV),
     _ => Err(format!("Unsupported file type: {}", file_extension)),
     
 }
